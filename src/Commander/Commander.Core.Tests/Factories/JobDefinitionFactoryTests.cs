@@ -1,4 +1,6 @@
-namespace Commander.Core.Tests;
+using Commander.Core.Factories;
+
+namespace Commander.Core.Tests.Factories;
 
 public class JobDefinitionFactoryTests
 {

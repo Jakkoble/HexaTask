@@ -1,4 +1,6 @@
-namespace Commander.Core.Tests;
+using Commander.Core.Entities;
+
+namespace Commander.Core.Tests.Entities;
 
 public class JobTests
 {

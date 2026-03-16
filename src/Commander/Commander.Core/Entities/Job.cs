@@ -1,4 +1,4 @@
-namespace Commander.Core;
+namespace Commander.Core.Entities;
 
 public class Job(in string name, in List<string> commands)
 {

@@ -1,7 +1,8 @@
+using Commander.Core.Entities;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Commander.Core;
+namespace Commander.Core.Factories;
 
 public class JobDefinitionFactory
 {
