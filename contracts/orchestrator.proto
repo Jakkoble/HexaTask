@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package orchestrator;
+option csharp_namespace = "Commander";
+
+service OrchestratorService {
+  rpc SubmitJob (SubmitJobRequest) returns (SubmitJobResponse);
+  rpc MonitorJob (MonitorJobRequest) returns (stream MonitorJobResponse);
+}
+
+message SubmitJobRequest {
+  string yaml_payload = 1; 
+}
+
+message SubmitJobResponse {
+  string job_id = 1;
+  string message = 2;
+}
+
+message MonitorJobRequest {
+  string job_id = 1;
+}
+
+message MonitorJobResponse {
+  string log = 1;
+}

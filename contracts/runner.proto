@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package runner;
+option csharp_namespace = "Commander";
+
+service RunnerService {
+  rpc StreamLogs (stream StreamLogsRequest) returns (StreamLogsResponse);
+  rpc UpdateJobStatus (UpdateJobStatusRequest) returns (UpdateJobStatusResponse);
+}
+
+message StreamLogsRequest {
+  string job_id = 1;
+  string log = 2;
+}
+
+message StreamLogsResponse {
+  bool success = 1; 
+}
+
+message UpdateJobStatusRequest {
+  string job_id = 1;
+  int32 exit_code = 2;
+}
+
+message UpdateJobStatusResponse {
+  bool success = 1;
+}
