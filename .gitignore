@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# C# / .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+appsettings.Development.json
