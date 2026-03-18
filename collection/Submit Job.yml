@@ -1,0 +1,14 @@
+info:
+  name: Submit Job
+  type: grpc
+  seq: 1
+
+grpc:
+  url: http://localhost:5271/
+  method: /orchestrator.OrchestratorService/SubmitJob
+  methodType: unary
+  message: |-
+    {
+      "yaml_payload": "name: test-job\ncommands:\n  - echo 'Hello World!'"
+    }
+  auth: inherit
