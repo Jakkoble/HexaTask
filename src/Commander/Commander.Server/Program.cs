@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
+builder.Services.AddSingleton<DockerRunnerAdapter>();
 builder.Services.AddSingleton<IRunnerPort, DockerRunnerAdapter>();
 builder.Services.AddSingleton<IJobDefinitionFactory, JobDefinitionFactory>();
 builder.Services.AddSingleton<IJobStore, InMemoryJobStore>();
@@ -21,8 +22,9 @@ builder.Services.Configure<DockerRunnerOptions>(
     builder.Configuration.GetSection("DockerRunner")
 );
 
+builder.Services.AddHostedService<ImageWarmupService>();
+
 var app = builder.Build();
-Console.WriteLine(builder.Configuration["DockerRunner:Image"]);
 
 if (app.Environment.IsDevelopment())
 {

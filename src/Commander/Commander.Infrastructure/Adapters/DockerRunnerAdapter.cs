@@ -51,10 +51,8 @@ public class DockerRunnerAdapter(IDockerClient client, IOptions<DockerRunnerOpti
 
   private static string ContainerName(Job job) => $"hexatask-{job.Id}";
 
-  private async Task EnsureImageAsync()
+  public async Task EnsureImageAsync()
   {
-    Console.WriteLine($"Check if image {_image} exists");
-
     if (_isImageRemote)
     {
       await _client.Images.CreateImageAsync(
