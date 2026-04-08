@@ -2,52 +2,74 @@
 using Commander.Infrastructure.Adapters;
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using Moq;
 
 namespace Commander.Infrastructure.Tests.Adapters;
 
-public class DockerRunnerAdapterTests : IAsyncLifetime
+public class DockerRunnerAdapterTests
 {
-  private readonly DockerRunnerAdapter _adapter;
-  private readonly DockerClient _client;
-  private Job? _job;
-
-  public DockerRunnerAdapterTests()
-  {
-    _adapter = new DockerRunnerAdapter();
-    _client = new DockerClientConfiguration(DockerRunnerAdapter.GetDockerUri())
-      .CreateClient();
-  }
-
-  public Task InitializeAsync()
-  {
-    _job = new Job("tester", ["ls -la", "echo 'Hello World!'"]);
-    return Task.CompletedTask;
-  }
-
-  public async Task DisposeAsync()
-  {
-    await _adapter.StopJob(_job!, false);
-  }
-
+  private readonly Job? _job = new("tester", ["ls -la", "echo 'Hello World!'"]);
 
   [Fact]
-  public async Task ExecuteJob()
+  public async Task ExecuteJob_CallsCreateAndStart()
   {
-    await _adapter.ExecuteJob(_job!);
+    var mockContainers = new Mock<IContainerOperations>();
+    mockContainers
+        .Setup(c => c.CreateContainerAsync(
+            It.IsAny<CreateContainerParameters>(),
+            It.IsAny<CancellationToken>()))
+        .ReturnsAsync(new CreateContainerResponse { ID = "abc123" });
 
-    var expectedName = $"/hexatask-{_job!.Id}";
+    mockContainers
+        .Setup(c => c.StartContainerAsync(
+            It.IsAny<string>(),
+            It.IsAny<ContainerStartParameters>(),
+            It.IsAny<CancellationToken>()))
+        .ReturnsAsync(true);
 
-    var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters { All = true });
-    var createdContainer = containers.FirstOrDefault(c => c.Names.Contains(expectedName));
+    var mockClient = new Mock<IDockerClient>();
+    mockClient.Setup(c => c.Containers).Returns(mockContainers.Object);
 
-    Assert.NotNull(createdContainer);
-    Assert.Equal("running", createdContainer.State);
+    var adapter = new DockerRunnerAdapter(mockClient.Object);
 
-    await _adapter.StopJob(_job, true);
+    await adapter.ExecuteJob(_job!);
 
-    containers = await _client.Containers.ListContainersAsync(new ContainersListParameters { All = true });
-    var removedContainer = containers.FirstOrDefault(c => c.Names.Contains(expectedName));
+    mockContainers.Verify(c => c.CreateContainerAsync(
+        It.Is<CreateContainerParameters>(p =>
+            p.Env.Contains($"JOB_ID={_job!.Id}") &&
+            p.Image == "hexatask-runner:latest"),
+        It.IsAny<CancellationToken>()),
+        Times.Once);
 
-    Assert.Null(removedContainer);
+    mockContainers.Verify(c => c.StartContainerAsync(
+        "abc123",
+        It.IsAny<ContainerStartParameters>(),
+        It.IsAny<CancellationToken>()),
+        Times.Once);
+  }
+
+  [Fact]
+  public async Task StopJob_RemovesContainerByName()
+  {
+    var mockContainers = new Mock<IContainerOperations>();
+    mockContainers
+        .Setup(c => c.RemoveContainerAsync(
+            It.IsAny<string>(),
+            It.IsAny<ContainerRemoveParameters>(),
+            It.IsAny<CancellationToken>()))
+        .Returns(Task.CompletedTask);
+
+    var mockClient = new Mock<IDockerClient>();
+    mockClient.Setup(c => c.Containers).Returns(mockContainers.Object);
+
+    var adapter = new DockerRunnerAdapter(mockClient.Object);
+
+    await adapter.StopJob(_job!, true);
+
+    mockContainers.Verify(c => c.RemoveContainerAsync(
+        $"hexatask-{_job!.Id}",
+        It.IsAny<ContainerRemoveParameters>(),
+        It.IsAny<CancellationToken>()),
+        Times.Once);
   }
 }
