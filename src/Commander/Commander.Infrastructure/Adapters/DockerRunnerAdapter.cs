@@ -28,25 +28,14 @@ public class DockerRunnerAdapter(IDockerClient client, IOptions<DockerRunnerOpti
       Env = [
         $"JOB_ID={job.Id}",
         $"COMMANDER_URL=host.docker.internal:5271"
-      ]
+      ],
+      HostConfig = new()
+      {
+        AutoRemove = true
+      }
     });
 
     await _client.Containers.StartContainerAsync(response.ID, new());
-  }
-
-  public async Task StopJob(Job job, bool wasSuccessful)
-  {
-    var targetContainer = ContainerName(job);
-    try
-    {
-      await _client.Containers.RemoveContainerAsync(targetContainer, new ContainerRemoveParameters
-      {
-        Force = true
-      });
-    }
-    catch (DockerContainerNotFoundException)
-    {
-    }
   }
 
   private static string ContainerName(Job job) => $"hexatask-{job.Id}";

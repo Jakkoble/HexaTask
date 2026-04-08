@@ -63,29 +63,4 @@ public class DockerRunnerAdapterTests
         It.IsAny<CancellationToken>()),
         Times.Once);
   }
-
-  [Fact]
-  public async Task StopJob_RemovesContainerByName()
-  {
-    var mockContainers = new Mock<IContainerOperations>();
-    mockContainers
-        .Setup(c => c.RemoveContainerAsync(
-            It.IsAny<string>(),
-            It.IsAny<ContainerRemoveParameters>(),
-            It.IsAny<CancellationToken>()))
-        .Returns(Task.CompletedTask);
-
-    var mockClient = new Mock<IDockerClient>();
-    mockClient.Setup(c => c.Containers).Returns(mockContainers.Object);
-
-    var adapter = new DockerRunnerAdapter(mockClient.Object, DefaultOptions);
-
-    await adapter.StopJob(_job!, true);
-
-    mockContainers.Verify(c => c.RemoveContainerAsync(
-        $"hexatask-{_job!.Id}",
-        It.IsAny<ContainerRemoveParameters>(),
-        It.IsAny<CancellationToken>()),
-        Times.Once);
-  }
 }
