@@ -1,0 +1,15 @@
+services:
+  commander:
+    build:
+      context: .
+      dockerfile: src/Commander/Dockerfile
+    image: ghcr.io/jakkoble/hexatask-commander:latest
+    container_name: hexatask-commander
+    ports:
+      - "5000:5000"
+    environment:
+      DOCKER_HOST: "unix:///var/run/docker.sock"
+      ASPNETCORE_ENVIRONMENT: "Production"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
