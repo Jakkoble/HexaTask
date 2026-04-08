@@ -17,7 +17,12 @@ builder.Services.AddSingleton<IDockerClient>(_ =>
     new DockerClientConfiguration(DockerConfiguration.GetDockerUri())
       .CreateClient());
 
+builder.Services.Configure<DockerRunnerOptions>(
+    builder.Configuration.GetSection("DockerRunner")
+);
+
 var app = builder.Build();
+Console.WriteLine(builder.Configuration["DockerRunner:Image"]);
 
 if (app.Environment.IsDevelopment())
 {
