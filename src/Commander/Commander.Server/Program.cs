@@ -1,8 +1,10 @@
 using Commander.Core.Factories;
 using Commander.Core.Ports;
 using Commander.Infrastructure.Adapters;
+using Commander.Infrastructure.Configuration;
 using Commander.Server.Services;
 using Commander.Server.Store;
+using Docker.DotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,9 @@ builder.Services.AddGrpcReflection();
 builder.Services.AddSingleton<IRunnerPort, DockerRunnerAdapter>();
 builder.Services.AddSingleton<IJobDefinitionFactory, JobDefinitionFactory>();
 builder.Services.AddSingleton<IJobStore, InMemoryJobStore>();
+builder.Services.AddSingleton<IDockerClient>(_ =>
+    new DockerClientConfiguration(DockerConfiguration.GetDockerUri())
+      .CreateClient());
 
 var app = builder.Build();
 
