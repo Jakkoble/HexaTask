@@ -1,0 +1,14 @@
+info:
+  name: Get Job Details
+  type: grpc
+  seq: 2
+
+grpc:
+  url: http://localhost:5271/
+  method: /runner.RunnerService/GetJobDetails
+  methodType: unary
+  message: |-
+    {
+      "job_id": "ec0309d2-6565-413e-8beb-791162b36abf"
+    }
+  auth: inherit

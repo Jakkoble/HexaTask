@@ -17,20 +17,24 @@ public class DockerRunnerAdapter : IRunnerPort
 
   public async Task ExecuteJob(Job job)
   {
-    await _client.Images.CreateImageAsync(
-      parameters: new ImagesCreateParameters
-      {
-        FromImage = "ubuntu",
-        Tag = "latest",
-      },
-      authConfig: null,
-      progress: new Progress<JSONMessage>()
-    );
+    // await _client.Images.CreateImageAsync(
+    //   parameters: new ImagesCreateParameters
+    //   {
+    //     FromImage = "ubuntu",
+    //     Tag = "latest",
+    //   },
+    //   authConfig: null,
+    //   progress: new Progress<JSONMessage>()
+    // );
 
     var response = await _client.Containers.CreateContainerAsync(new CreateContainerParameters()
     {
-      Image = "ubuntu:latest",
-      Name = ContainerName(job)
+      Image = "hexatask-runner:latest",
+      Name = ContainerName(job),
+      Env = [
+        $"JOB_ID={job.Id}",
+        $"COMMANDER_URL=host.docker.internal:5271"
+      ]
     });
 
     await _client.Containers.StartContainerAsync(response.ID, new());

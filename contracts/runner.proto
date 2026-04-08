@@ -2,15 +2,26 @@ syntax = "proto3";
 
 package runner;
 option csharp_namespace = "Commander";
+option go_package = "github.com/Jakkoble/HexaTask/src/Runner/pb";
 
 service RunnerService {
-  rpc StreamLogs (stream StreamLogsRequest) returns (StreamLogsResponse);
+  rpc GetJobDetails (GetJobDetailsRequest) returns (GetJobDetailsResponse);
+  rpc StreamLogs (stream LogMessage) returns (StreamLogsResponse);
   rpc UpdateJobStatus (UpdateJobStatusRequest) returns (UpdateJobStatusResponse);
 }
 
-message StreamLogsRequest {
+message GetJobDetailsRequest {
+  string job_id = 1;
+}
+
+message GetJobDetailsResponse {
+  repeated string commands = 1;
+}
+
+message LogMessage {
   string job_id = 1;
   string log = 2;
+  bool is_error = 3;
 }
 
 message StreamLogsResponse {

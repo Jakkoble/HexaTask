@@ -1,10 +1,11 @@
 using Commander.Core.Factories;
 using Commander.Core.Ports;
+using Commander.Server.Store;
 using Grpc.Core;
 
 namespace Commander.Server.Services;
 
-public class OrchestratorService(JobDefinitionFactory factory, IRunnerPort runnerPort, ILogger<OrchestratorService> logger) : Commander.OrchestratorService.OrchestratorServiceBase
+public class OrchestratorService(JobDefinitionFactory factory, IRunnerPort runnerPort, ILogger<OrchestratorService> logger, IJobStore store) : Commander.OrchestratorService.OrchestratorServiceBase
 {
   public override async Task<SubmitJobResponse> SubmitJob(SubmitJobRequest request, ServerCallContext context)
   {
@@ -19,6 +20,8 @@ public class OrchestratorService(JobDefinitionFactory factory, IRunnerPort runne
       job.StartRunning();
 
       await runnerPort.ExecuteJob(job);
+
+      store.StoreJob(job);
 
       return new SubmitJobResponse
       {
