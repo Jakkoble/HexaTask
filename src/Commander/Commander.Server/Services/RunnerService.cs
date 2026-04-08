@@ -4,7 +4,7 @@ using Grpc.Core;
 
 namespace Commander.Server.Services;
 
-public class RunnerService(ILogger<OrchestratorService> logger, IJobStore store) : Commander.RunnerService.RunnerServiceBase
+public class RunnerService(ILogger<RunnerService> logger, IJobStore store) : Commander.RunnerService.RunnerServiceBase
 {
   public override async Task<GetJobDetailsResponse> GetJobDetails(GetJobDetailsRequest request, ServerCallContext context)
   {
