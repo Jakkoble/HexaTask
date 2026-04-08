@@ -16,11 +16,14 @@ public class OrchestratorService(IJobDefinitionFactory factory, IRunnerPort runn
     try
     {
       var job = factory.CreateFromYaml(request.YamlPayload);
+      if (!store.StoreJob(job))
+      {
+        logger.LogError("Job {JobId} already exists in store", job.Id);
+        throw new RpcException(new Status(StatusCode.Internal, "Failed to store job."));
+      }
+
       job.StartRunning();
-
       await runnerPort.ExecuteJob(job);
-
-      store.StoreJob(job);
 
       return new SubmitJobResponse
       {
