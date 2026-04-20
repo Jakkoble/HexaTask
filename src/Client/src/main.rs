@@ -1,23 +1,22 @@
-use crate::client::CommanderClient;
+use std::error::Error;
 
+use crate::{app::App, config::Config};
+
+mod action;
+mod app;
 mod client;
+mod components;
+mod config;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let path = std::env::args()
-        .nth(1)
-        .unwrap_or_else(|| "job.yaml".to_string());
+async fn main() -> Result<(), Box<dyn Error>> {
+    let config = Config::from_env();
 
-    let yaml_payload =
-        std::fs::read_to_string(&path).unwrap_or_else(|_| panic!("File not found {path}"));
+    let mut app = App::new(config);
+    let mut terminal = ratatui::init();
 
-    println!("Sent job: {path}");
+    let result = app.run(&mut terminal).await;
 
-    let mut client = CommanderClient::connect("http://[::1]:5271").await?;
-
-    let job_id = client.submit_job(yaml_payload).await?;
-
-    println!("Job accepted. ID: {job_id}");
-
-    Ok(())
+    ratatui::restore();
+    result
 }

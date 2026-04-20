@@ -13,3 +13,4 @@ obj/
 
 # Rust
 target/
+jobs/

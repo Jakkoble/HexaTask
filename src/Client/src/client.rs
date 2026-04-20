@@ -5,7 +5,9 @@ pub mod orchestrator {
 use std::error::Error;
 
 use orchestrator::{SubmitJobRequest, orchestrator_service_client::OrchestratorServiceClient};
-use tonic::transport::Channel;
+use tonic::{Streaming, transport::Channel};
+
+use crate::client::orchestrator::{MonitorJobRequest, MonitorJobResponse};
 
 pub struct CommanderClient {
     client: OrchestratorServiceClient<Channel>,
@@ -25,5 +27,18 @@ impl CommanderClient {
             .await?;
 
         Ok(response.into_inner().job_id)
+    }
+
+    pub async fn monitor_job(
+        &mut self,
+        job_id: String,
+    ) -> Result<Streaming<MonitorJobResponse>, Box<dyn Error>> {
+        let stream = self
+            .client
+            .monitor_job(MonitorJobRequest { job_id })
+            .await?
+            .into_inner();
+
+        Ok(stream)
     }
 }
