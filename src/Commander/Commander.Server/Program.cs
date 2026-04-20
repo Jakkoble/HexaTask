@@ -15,12 +15,11 @@ builder.Services.AddSingleton<IRunnerPort, DockerRunnerAdapter>();
 builder.Services.AddSingleton<IJobDefinitionFactory, JobDefinitionFactory>();
 builder.Services.AddSingleton<IJobStore, InMemoryJobStore>();
 builder.Services.AddSingleton<IDockerClient>(_ =>
-    new DockerClientConfiguration(DockerConfiguration.GetDockerUri())
-      .CreateClient());
-
-builder.Services.Configure<DockerRunnerOptions>(
-    builder.Configuration.GetSection("DockerRunner")
+    new DockerClientConfiguration(DockerConfiguration.GetDockerUri()).CreateClient()
 );
+builder.Services.AddSingleton<ILogBus, InMemoryLogBus>();
+
+builder.Services.Configure<DockerRunnerOptions>(builder.Configuration.GetSection("DockerRunner"));
 
 builder.Services.AddHostedService<ImageWarmupService>();
 
@@ -28,7 +27,7 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-  app.MapGrpcReflectionService();
+    app.MapGrpcReflectionService();
 }
 
 app.MapGrpcService<OrchestratorService>();
