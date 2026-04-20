@@ -13,6 +13,7 @@ public class OrchestratorServiceTests
   private readonly IJobDefinitionFactory _factory;
   private readonly Mock<IRunnerPort> _runnerPortMock;
   private readonly IJobStore _store;
+  private readonly ILogBus _logBus;
   private readonly Server.Services.OrchestratorService _service;
 
   public OrchestratorServiceTests()
@@ -20,10 +21,11 @@ public class OrchestratorServiceTests
     _factory = new JobDefinitionFactory();
     _runnerPortMock = new();
     _store = new InMemoryJobStore();
+    _logBus = new InMemoryLogBus();
 
     var logger = NullLogger<Server.Services.OrchestratorService>.Instance;
 
-    _service = new(_factory, _runnerPortMock.Object, logger, _store);
+    _service = new(_factory, _runnerPortMock.Object, logger, _store, _logBus);
   }
 
   [Fact]
@@ -40,6 +42,7 @@ public class OrchestratorServiceTests
     var response = await _service.SubmitJob(request, null!);
 
     Assert.False(string.IsNullOrWhiteSpace(response.JobId));
+    Assert.NotNull(_logBus.GetReader(Guid.Parse(response.JobId)));
     _runnerPortMock.Verify(
       port => port.ExecuteJob(It.Is<Job>(j =>
         j.Name == "my-super-test-job" &&

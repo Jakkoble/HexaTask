@@ -10,3 +10,7 @@ obj/
 .vs/
 *.user
 *.suo
+
+# Rust
+target/
+jobs/
