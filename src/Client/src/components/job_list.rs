@@ -84,3 +84,63 @@ impl Component for JobList {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crossterm::event::{KeyEvent, KeyEventState, KeyModifiers};
+
+    fn job(name: &str) -> Job {
+        Job {
+            name: name.to_string(),
+            raw: format!("raw-{name}"),
+        }
+    }
+
+    fn key_event(code: KeyCode) -> KeyEvent {
+        KeyEvent {
+            code,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }
+    }
+
+    #[test]
+    fn enter_selects_current_job() {
+        let mut list = JobList::new(vec![job("a.yaml"), job("b.yaml")]);
+        list.list_state.select(Some(1));
+
+        let action = list.handle_key_events(key_event(KeyCode::Enter));
+
+        match action {
+            Some(Action::SelectJob(job)) => assert_eq!(job.name, "b.yaml"),
+            _ => panic!("expected selected job action"),
+        }
+    }
+
+    #[test]
+    fn navigation_updates_selected_index() {
+        let mut list = JobList::new(vec![job("a.yaml"), job("b.yaml")]);
+
+        list.handle_key_events(key_event(KeyCode::Down));
+        assert_eq!(list.list_state.selected(), Some(1));
+
+        list.handle_key_events(key_event(KeyCode::Up));
+        assert_eq!(list.list_state.selected(), Some(0));
+    }
+
+    #[test]
+    fn quit_keys_return_quit_action() {
+        let mut list = JobList::new(vec![job("a.yaml")]);
+
+        assert!(matches!(
+            list.handle_key_events(key_event(KeyCode::Char('q'))),
+            Some(Action::Quit)
+        ));
+        assert!(matches!(
+            list.handle_key_events(key_event(KeyCode::Esc)),
+            Some(Action::Quit)
+        ));
+    }
+}

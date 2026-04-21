@@ -49,3 +49,58 @@ impl Component for JobDetail {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crossterm::event::{KeyEvent, KeyEventState, KeyModifiers};
+    use ratatui::{Terminal, backend::TestBackend};
+    use tokio::sync::mpsc;
+
+    fn key_event(code: KeyCode) -> KeyEvent {
+        KeyEvent {
+            code,
+            modifiers: KeyModifiers::NONE,
+            kind: KeyEventKind::Press,
+            state: KeyEventState::NONE,
+        }
+    }
+
+    #[test]
+    fn backspace_opens_job_list() {
+        let (_tx, rx) = mpsc::unbounded_channel();
+        let mut detail = JobDetail::new("job-1".to_string(), rx);
+
+        let action = detail.handle_key_events(key_event(KeyCode::Backspace));
+
+        assert!(matches!(action, Some(Action::OpenJobList)));
+    }
+
+    #[test]
+    fn render_collects_available_log_lines() {
+        let (tx, rx) = mpsc::unbounded_channel();
+        tx.send("[OUT] started".to_string())
+            .expect("first log line should be queued");
+        tx.send("[ERR] failed".to_string())
+            .expect("second log line should be queued");
+
+        let backend = TestBackend::new(40, 5);
+        let mut terminal = Terminal::new(backend).expect("test terminal should be created");
+        let mut detail = JobDetail::new("job-1".to_string(), rx);
+
+        terminal
+            .draw(|frame| detail.render(frame, frame.area()))
+            .expect("detail view should render");
+
+        let buffer = terminal.backend().buffer().clone();
+        let rendered = buffer
+            .content()
+            .iter()
+            .map(|cell| cell.symbol())
+            .collect::<String>();
+
+        assert!(rendered.contains("Job: job-1"));
+        assert!(rendered.contains("[OUT] started"));
+        assert!(rendered.contains("[ERR] failed"));
+    }
+}
