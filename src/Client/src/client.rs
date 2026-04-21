@@ -56,10 +56,13 @@ impl CommanderClientApi for CommanderClient {
             while let Some(message) = stream.next().await {
                 match message {
                     Ok(msg) => {
-                        let prefix = if msg.is_error { "[ERR] " } else { "[OUT] " };
-                        let _ = tx.send(format!("{}{}", prefix, msg.log));
+                        if !msg.log.is_empty() {
+                            let prefix = if msg.is_error { "[ERR] " } else { "[OUT] " };
+                            let _ = tx.send(format!("{}{}", prefix, msg.log));
+                        }
 
                         if msg.is_final {
+                            let _ = tx.send("-- Job has ended --".to_string());
                             break;
                         }
                     }
