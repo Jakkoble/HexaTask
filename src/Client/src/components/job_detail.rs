@@ -38,14 +38,14 @@ impl Component for JobDetail {
         f.render_widget(paragraph, rect);
     }
 
-    fn handle_key_events(&mut self, key: crossterm::event::KeyEvent) -> crate::action::Action {
+    fn handle_key_events(&mut self, key: crossterm::event::KeyEvent) -> Option<Action> {
         if key.kind != KeyEventKind::Press {
-            return Action::Ignore;
+            return None;
         }
 
         match key.code {
-            KeyCode::Backspace => Action::OpenJobList,
-            _ => Action::Ignore,
+            KeyCode::Backspace => Some(Action::OpenJobList),
+            _ => None,
         }
     }
 }

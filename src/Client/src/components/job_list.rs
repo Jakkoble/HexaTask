@@ -56,31 +56,31 @@ impl Component for JobList {
         }
     }
 
-    fn handle_key_events(&mut self, key: crossterm::event::KeyEvent) -> crate::action::Action {
+    fn handle_key_events(&mut self, key: crossterm::event::KeyEvent) -> Option<Action> {
         if key.kind != KeyEventKind::Press {
-            return Action::Ignore;
+            return None;
         }
 
         match key.code {
             KeyCode::Char('j') | KeyCode::Down => {
                 self.list_state.select_next();
-                Action::Ignore
+                None
             }
             KeyCode::Char('k') | KeyCode::Up => {
                 self.list_state.select_previous();
-                Action::Ignore
+                None
             }
-            KeyCode::Char('q') | KeyCode::Esc => Action::Quit,
+            KeyCode::Char('q') | KeyCode::Esc => Some(Action::Quit),
             KeyCode::Enter => {
                 if let Some(index) = self.list_state.selected() {
                     if let Some(job) = self.jobs.get(index) {
-                        return Action::SelectJob(job.clone());
+                        return Some(Action::SelectJob(job.clone()));
                     }
                 }
 
-                Action::Ignore
+                None
             }
-            _ => Action::Ignore,
+            _ => None,
         }
     }
 }

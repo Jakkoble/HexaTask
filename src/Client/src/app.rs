@@ -53,7 +53,11 @@ impl App {
             None
         };
 
-        match self.screen.handle_events(event) {
+        let Some(action) = self.screen.handle_events(event) else {
+            return Ok(());
+        };
+
+        match action {
             Action::Quit => self.should_quit = true,
             Action::SelectJob(job) => {
                 let job_id = self.client.submit_job(job.raw).await?;
@@ -66,7 +70,6 @@ impl App {
 
                 self.screen = Box::new(JobList::new(jobs));
             }
-            _ => {}
         }
 
         Ok(())
