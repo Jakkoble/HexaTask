@@ -1,6 +1,8 @@
 use crossterm::event::{KeyCode, KeyEventKind};
 use ratatui::{
-    text::{Line, Text},
+    layout::{Constraint, Layout},
+    style::Style,
+    text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
 };
 
@@ -28,14 +30,48 @@ impl Component for JobDetail {
             self.logs.push(line);
         }
 
-        let text: Vec<Line> = self.logs.iter().map(|l| Line::from(l.as_str())).collect();
-        let paragraph = Paragraph::new(Text::from(text)).block(
+        let [top_area, log_area, controll_area] = Layout::vertical([
+            Constraint::Length(3),
+            Constraint::Min(3),
+            Constraint::Length(3),
+        ])
+        .areas(rect);
+
+        let top_line = Line::from(vec![
+            Span::raw("Job ID: "),
+            Span::styled(&self.job_id, Style::new().blue()),
+            Span::raw("   "),
+            Span::raw("Log Lines: "),
+            Span::styled(self.logs.len().to_string(), Style::new().green()),
+        ]);
+
+        let top_block =
+            Paragraph::new(top_line).block(Block::bordered().title_top(" Job Details "));
+        f.render_widget(top_block, top_area);
+
+        let logs: Vec<Line> = self.logs.iter().map(|l| Line::from(l.as_str())).collect();
+        let paragraph = Paragraph::new(Text::from(logs)).block(
             Block::default()
-                .title(format!("Job: {}", self.job_id))
+                .title_top(" Live Logs ")
                 .borders(Borders::ALL),
         );
+        f.render_widget(paragraph, log_area);
 
-        f.render_widget(paragraph, rect);
+        let control_line = Line::from(vec![
+            Span::styled(" Back ", Style::new().black().on_cyan()),
+            Span::raw(" "),
+            Span::styled("Backspace", Style::new().cyan()),
+            Span::raw("   "),
+            Span::styled(" Quit ", Style::new().black().on_red()),
+            Span::raw(" "),
+            Span::styled("q", Style::new().red()),
+            Span::raw("/"),
+            Span::styled("Esc", Style::new().red()),
+        ]);
+        let control_block =
+            Paragraph::new(control_line).block(Block::bordered().title_top(" Controls "));
+
+        f.render_widget(control_block, controll_area);
     }
 
     fn handle_key_events(&mut self, key: crossterm::event::KeyEvent) -> Option<Action> {
@@ -85,7 +121,7 @@ mod tests {
         tx.send("[ERR] failed".to_string())
             .expect("second log line should be queued");
 
-        let backend = TestBackend::new(40, 5);
+        let backend = TestBackend::new(100, 12);
         let mut terminal = Terminal::new(backend).expect("test terminal should be created");
         let mut detail = JobDetail::new("job-1".to_string(), rx);
 
@@ -100,8 +136,12 @@ mod tests {
             .map(|cell| cell.symbol())
             .collect::<String>();
 
-        assert!(rendered.contains("Job: job-1"));
+        assert!(rendered.contains("Job ID:"));
+        assert!(rendered.contains("job-1"));
+        assert!(rendered.contains("Log Lines:"));
+        assert!(rendered.contains("2"));
         assert!(rendered.contains("[OUT] started"));
         assert!(rendered.contains("[ERR] failed"));
+        assert!(rendered.contains("Backspace"));
     }
 }
