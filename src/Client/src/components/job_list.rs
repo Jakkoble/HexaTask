@@ -1,5 +1,3 @@
-use std::panic;
-
 use crossterm::event::{KeyCode, KeyEventKind};
 use ratatui::{
     layout::{Constraint, Layout},
@@ -46,15 +44,15 @@ impl Component for JobList {
         f.render_stateful_widget(list, chunks[0], &mut self.list_state);
 
         if let Some(index) = self.list_state.selected() {
-            match self.jobs.get(index) {
-                Some(job) => {
-                    let p = Paragraph::new(job.raw.clone())
-                        .block(Block::bordered().title_top("Selected job"));
+            let content = match self.jobs.get(index) {
+                Some(job) => job.raw.clone(),
+                None => "Job not found".to_string(),
+            };
 
-                    f.render_widget(p, chunks[1]);
-                }
-                None => panic!("Job not found"),
-            }
+            let paragraph =
+                Paragraph::new(content).block(Block::bordered().title_top("Selected job"));
+
+            f.render_widget(paragraph, chunks[1]);
         }
     }
 
