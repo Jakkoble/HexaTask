@@ -43,9 +43,18 @@ impl Component for JobDetail {
         ])
         .areas(rect);
 
+        let running_status = if self.log_rx.is_closed() {
+            Span::styled("Finished", Style::new().yellow())
+        } else {
+            Span::styled(" Running ", Style::new().on_yellow().black())
+        };
+
         let top_line = Line::from(vec![
             Span::raw("Job ID: "),
             Span::styled(&self.job_id, Style::new().blue()),
+            Span::raw("   "),
+            Span::raw("Status: "),
+            running_status,
             Span::raw("   "),
             Span::raw("Log Lines: "),
             Span::styled(self.logs.len().to_string(), Style::new().green()),
@@ -172,6 +181,8 @@ mod tests {
 
         assert!(rendered.contains("Job ID:"));
         assert!(rendered.contains("job-1"));
+        assert!(rendered.contains("Status:"));
+        assert!(rendered.contains("RUNNING"));
         assert!(rendered.contains("Log Lines:"));
         assert!(rendered.contains("2"));
         assert!(rendered.contains("[OUT] started"));
