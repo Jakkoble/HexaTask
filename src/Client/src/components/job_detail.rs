@@ -44,6 +44,7 @@ impl Component for JobDetail {
         }
 
         match key.code {
+            KeyCode::Char('q') | KeyCode::Esc => Some(Action::Quit),
             KeyCode::Backspace => Some(Action::OpenJobList),
             _ => None,
         }
