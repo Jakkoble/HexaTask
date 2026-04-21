@@ -12,3 +12,18 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: unless-stopped
+
+  tui:
+    build:
+      context: .
+      dockerfile: src/Client/Dockerfile
+    image: ghcr.io/jakkoble/hexatask-tui:latest
+    depends_on:
+      - commander
+    environment:
+      COMMANDER_ADDR: http://commander:5271
+      JOB_DIR: /app/jobs
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./jobs:/app/jobs
