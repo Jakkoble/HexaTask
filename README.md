@@ -37,6 +37,8 @@ docker compose version
 The repository includes a `Makefile` and a `compose.yml` file, so the quickest way to start the project is:
 
 ```bash
+curl -O https://raw.githubusercontent.com/Jakkoble/HexaTask/main/Makefile
+curl -O https://raw.githubusercontent.com/Jakkoble/HexaTask/main/compose.yml
 make start
 ```
 
