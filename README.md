@@ -51,31 +51,21 @@ This command will:
 
 ## Communication Flow
 
-The following flow chart shows how the `client`, `commander`, and `runner` communicate during job execution and log streaming:
+The following diagram shows only the high-level communication flow between `client`, `commander`, and `runner`:
 
 ```mermaid
-flowchart LR
-    Client["Client / TUI"]
-    Commander["Commander"]
-    Runner["Runner"]
-    Store[("Job Store")]
-    LogBus[("Log Bus")]
+sequenceDiagram
+    participant Client
+    participant Commander
+    participant Runner
 
-    Client -->|"SubmitJob(yaml_payload)"| Commander
-    Commander -->|"Parse YAML and create job"| Store
-    Commander -->|"EnsureChannel(jobId)"| LogBus
-    Commander -->|"Start runner container"| Runner
-    Commander -->|"SubmitJobResponse(jobId)"| Client
+    Client->>Commander: 1. SubmitJob(yaml_payload)
+    Commander-->>Client: 2. SubmitJobResponse(jobId)
+    Client->>Commander: 3. MonitorJob(jobId)
 
-    Client -->|"MonitorJob(jobId)"| Commander
-    Commander -->|"Read log stream"| LogBus
-    LogBus -->|"MonitorJobResponse(log lines, final status)"| Client
-
-    Runner -->|"GetJobDetails(jobId)"| Commander
-    Commander -->|"Load commands"| Store
-    Commander -->|"GetJobDetailsResponse(commands)"| Runner
-
-    Runner -->|"Execute commands"| Runner
-    Runner -->|"StreamLogs(log, exitCode, isFinal)"| Commander
-    Commander -->|"PublishAsync(log entry)"| LogBus
+    Commander->>Runner: 4. Start job
+    Runner->>Commander: 5. GetJobDetails(jobId)
+    Commander-->>Runner: 6. GetJobDetailsResponse(commands)
+    Runner->>Commander: 7. StreamLogs(...)
+    Commander-->>Client: 8. MonitorJobResponse(logs / final status)
 ```
