@@ -1,5 +1,6 @@
 using Commander.Core.Factories;
 using Commander.Core.Ports;
+using Commander.Core.Services;
 using Commander.Infrastructure.Adapters;
 using Commander.Infrastructure.Configuration;
 using Commander.Server.Services;
@@ -10,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddGrpcReflection();
 
+builder.Services.AddSingleton<IJobOrchestrationPort, JobOrchestrationService>();
+builder.Services.AddSingleton<IRunnerCallbackPort, RunnerCallbackService>();
 builder.Services.AddSingleton<DockerRunnerAdapter>();
 builder.Services.AddSingleton<IRunnerPort, DockerRunnerAdapter>();
 builder.Services.AddSingleton<IJobDefinitionFactory, JobDefinitionFactory>();
