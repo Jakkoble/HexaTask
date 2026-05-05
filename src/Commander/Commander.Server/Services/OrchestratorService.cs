@@ -37,11 +37,11 @@ public class OrchestratorService(IJobOrchestrationPort orchestration)
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid Job ID"));
 
         IAsyncEnumerable<LogEntry>? reader = null;
-        for (var i = 0; i < 20 && reader == null; i++)
+        for (var i = 0; i < 40 && reader == null; i++)
         {
             reader = orchestration.MonitorJobAsync(jobId, context.CancellationToken);
             if (reader == null)
-                await Task.Delay(250, context.CancellationToken);
+                await Task.Delay(250);
         }
 
         if (reader == null)
