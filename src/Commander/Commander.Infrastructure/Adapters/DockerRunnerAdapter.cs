@@ -31,7 +31,8 @@ public class DockerRunnerAdapter(IDockerClient client, IOptions<DockerRunnerOpti
       ],
       HostConfig = new()
       {
-        AutoRemove = true
+        AutoRemove = true,
+	ExtraHosts = ["host.docker.internal:host-gateway"],
       }
     });
 
