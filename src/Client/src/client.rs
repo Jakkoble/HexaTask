@@ -6,6 +6,7 @@ use crate::client::orchestrator::MonitorJobRequest;
 use async_trait::async_trait;
 use orchestrator::{SubmitJobRequest, orchestrator_service_client::OrchestratorServiceClient};
 use std::error::Error;
+use std::io;
 use tokio::sync::mpsc;
 use tokio_stream::StreamExt;
 use tonic::transport::Channel;
@@ -25,7 +26,14 @@ pub(crate) struct CommanderClient {
 
 impl CommanderClient {
     pub(crate) async fn connect(addr: &str) -> Result<Self, ClientError> {
-        let client = OrchestratorServiceClient::connect(addr.to_string()).await?;
+        let client = OrchestratorServiceClient::connect(addr.to_string())
+            .await
+            .map_err(|err| {
+                let _ = err;
+                io::Error::other(format!(
+                    "Commander not reachable at {addr}. Start it or check COMMANDER_ADDR."
+                ))
+            })?;
 
         Ok(Self { client })
     }

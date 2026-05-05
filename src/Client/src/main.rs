@@ -13,7 +13,14 @@ mod components;
 mod config;
 
 #[tokio::main]
-async fn main() -> Result<(), client::ClientError> {
+async fn main() {
+    if let Err(err) = run().await {
+        eprintln!("{err}");
+        std::process::exit(1);
+    }
+}
+
+async fn run() -> Result<(), client::ClientError> {
     let config = Config::from_env();
     let client = Box::new(CommanderClient::connect(&config.commander_addr).await?);
 
